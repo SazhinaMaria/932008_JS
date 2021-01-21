@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWAPI</title>
+
+</head>
+
+<body>
+    <button id='api-data'>Get all api data</button>
+    <div>
+        <input type="search" id='search-input' placeholder="write the title">
+        <button id='search-button'>Search by title</button>
+    </div>
+    <code id='code-section'>
+
+    </code>
+</body>
+
+<script>
+    // Объявляем константы
+    const codeSection = document.getElementById('code-section');
+    const apiDataButton = document.getElementById('api-data');
+    const searchButton = document.getElementById('search-button');
+    const serchInput = document.getElementById('search-input');
+
+    async function getDataFromUrl(url) {
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Ошибка:', error);
+        }
+    }
+
+    function addCode(elems = []) {
+        for (let elem of elems) {
+            codeSection.appendChild(elem)
+        }
+    }
+
+    function createItemElement(item) {
+        let elem = document.createElement('p')
+        elem.innerHTML += 'title: ' + item.title + '<br/>'
+        elem.innerHTML += 'producer: ' + item.producer + '<br/>'
+        elem.innerHTML += 'director: ' + item.director + '<br/>'
+        elem.innerHTML += 'episode: ' + item.episode_id + '<br/>'
+        elem.innerHTML += 'created: ' + new Date(item.created).toLocaleDateString() + '<br/>'
+        return elem
+    }
+
+    apiDataButton.addEventListener('click', async () => {
+        const requestUrl = 'https://swapi.dev/api/films/'
+        codeSection.innerHTML = ''
+        const requestData = await getDataFromUrl(requestUrl);
+        if (requestData.count) {
+            const listItem = requestData.results.map(item => createItemElement(item))
+            addCode(listItem)
+        }
+    })
+
+    searchButton.addEventListener('click', async () => {
+        if (serchInput.value) {
+            codeSection.innerHTML = ''
+            const requestUrl = 'https://swapi.dev/api/films/?search=' + serchInput.value;
+            const requestData = await getDataFromUrl(requestUrl);
+            if (requestData.count) {
+                const listItem = requestData.results.map(item => createItemElement(item))
+                addCode(listItem)
+            } else {
+                let elem = document.createElement('p')
+                elem.innerText = 'Nothing found'
+                codeSection.appendChild(elem)
+            }
+            serchInput.value = ''
+        } else {
+            alert('Search field cannot be empty')
+        }
+    })
+</script>
+
+</html>
